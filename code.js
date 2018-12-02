@@ -104,7 +104,7 @@ function draw(grid,width,height){
 		var j;
 		for( j=0;j<height;j++){
 			if(grid[i][j]==1){
-				ctx.fillStyle="#ffffff";
+				ctx.fillStyle="#00ff00";
 			}
 			else{
 				ctx.fillStyle="#000000";
