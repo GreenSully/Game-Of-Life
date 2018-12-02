@@ -1,21 +1,31 @@
 var animate = /*window.requestAnimationFrame ||
 window.webkitRequestAnimationFrame ||
 window.mozRequestAnimationFrame ||*/
-function(callback) { window.setTimeout(callback, 500) };
+function(callback) { window.setTimeout(callback, 1000/30) };
 var canvas=document.createElement ("canvas");
 var ctx;
 ctx=canvas.getContext("2d");
 
 var PlayButton=document.createElement("button");
 PlayButton.innerHTML="play/pause";
+var ClearButton=document.createElement("button");
+ClearButton.innerHTML="clear";
+var RandomButton=document.createElement("button");
+RandomButton.innerHTML="random grid";
 
-var width=600;
-var height=600;
-var resolution=30;
+var width=1000;
+var height=800;
+var resolution=10;
 canvas.width=width;
 canvas.height=height;
 PlayButton.style.position="absolute";
 PlayButton.style.top=height;
+ClearButton.style.position="absolute";
+ClearButton.style.top=height;
+ClearButton.style.left=100;
+RandomButton.style.position="absolute";
+RandomButton.style.top=height;
+RandomButton.style.left=160;
 
 var gridWidth=width/resolution;
 var gridHeight=height/resolution;
@@ -24,15 +34,43 @@ var grid=create2Darray(gridWidth,gridHeight);
 
 var playing=false;
 var step = function(){
+	
 grid=addLife(grid,newLifeX,newLifeY,newIndex);
 newIndex=0;
 if(playing==true){
 	grid =nextGrid(grid,gridWidth,gridHeight);
 }
-
+if(clearScreen==true){
+	clear(grid,gridWidth,gridHeight);
+	clearScreen=false;
+}
+if(random==true){
+	randomGrid(grid,gridWidth,gridHeight);
+	random=false;
+}
 draw(grid,gridWidth,gridHeight);
 animate(step);
 };
+
+function clear(grid,width,height){
+	var i;
+	for( i=0;i<width;i++){
+		var j;
+	for( j=0;j<height;j++){
+			grid[i][j]=0;
+		}
+	}
+}
+
+function randomGrid(grid,width,height){
+	var i;
+	for( i=0;i<width;i++){
+		var j;
+	for( j=0;j<height;j++){
+			grid[i][j]=Math.floor(Math.random()*2);
+		}
+	}
+}
 
 function nextGrid(grid,width,height){
 	var newgrid=create2Darray(width,height);
@@ -59,19 +97,19 @@ function nextGrid(grid,width,height){
 }
 
 function draw(grid,width,height){
-	ctx.fillStyle="#000000";
+	ctx.fillStyle="#ffffff";
 	ctx.fillRect(0,0,width*resolution,resolution*height);
 	var i;
 	for( i=0;i<width;i++){
 		var j;
 		for( j=0;j<height;j++){
 			if(grid[i][j]==1){
-				ctx.fillStyle="#000000";
-			}
-			else{
 				ctx.fillStyle="#ffffff";
 			}
-			ctx.fillRect(i*resolution+1,j*resolution+1,resolution-2,resolution-2);
+			else{
+				ctx.fillStyle="#000000";
+			}
+			ctx.fillRect(i*resolution,j*resolution,resolution,resolution);
 		}
 	}
 }
@@ -105,14 +143,14 @@ function countNeighbor(grid,x,y,width,height){
 	for(i=x-1;i<x+2;i++){
 		var j;
 		for(j=y-1;j<y+2;j++){
-			if(i>=0 && i<width && j>=0 && j<height){
+			//if(i>=0 && i<width && j>=0 && j<height){
 				if(i!=x || j!=y){
-					if(grid[i][j]==1){
+					if(grid[(i+width)%width][(j+height)%height]==1){
 						count++;
 					}
 				}
 				
-			}
+			//}
 			
 		}
 	}
@@ -123,14 +161,37 @@ var newLifeX=Array();
 var newLifeY=Array();
 var newIndex=0;
 
-canvas.addEventListener ("mousedown",function(event){
+var click=false;
 
- Mousex= event.clientX-canvas.offsetLeft;
+canvas.addEventListener ("mousemove",function(event){
+
+if(click==true){
+	Mousex= event.clientX-canvas.offsetLeft;
  Mousey= event.clientY-canvas.offsetTop;
 
 newLifeX[newIndex]=Math.floor(Mousex/resolution);
 newLifeY[newIndex]=Math.floor(Mousey/resolution);
 newIndex++;
+	
+}
+ 
+});
+
+
+
+canvas.addEventListener ("mousedown",function(event){
+Mousex= event.clientX-canvas.offsetLeft;
+ Mousey= event.clientY-canvas.offsetTop;
+
+newLifeX[newIndex]=Math.floor(Mousex/resolution);
+newLifeY[newIndex]=Math.floor(Mousey/resolution);
+newIndex++;
+ click=true;
+});
+
+canvas.addEventListener ("mouseup",function(event){
+
+ click=false;
 });
 
 PlayButton.addEventListener ("mousedown",function(event){
@@ -138,8 +199,22 @@ PlayButton.addEventListener ("mousedown",function(event){
  
 });
 
+var clearScreen=false;
+ClearButton.addEventListener ("mousedown",function(event){
+	clearScreen=true;
+ 
+});
+
+var random=false;
+RandomButton.addEventListener ("mousedown",function(event){
+	random=true;
+ 
+});
+
 window.onload=function(){
 document.body.appendChild(canvas);
 document.body.appendChild(PlayButton);
+document.body.appendChild(ClearButton);
+document.body.appendChild(RandomButton);
 animate(step);
 };
